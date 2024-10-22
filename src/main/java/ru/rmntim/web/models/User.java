@@ -26,6 +26,6 @@ public class User {
     @Column(name = "password_hash_b64")
     private String passwordHashB64;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Point> points = new HashSet<>();
 }
