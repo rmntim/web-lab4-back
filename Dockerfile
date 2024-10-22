@@ -7,7 +7,7 @@ COPY ./settings.gradle ./
 COPY ./gradle ./gradle
 COPY ./src ./src
 
-RUN gradle build
+RUN gradle --no-daemon build
 
 FROM quay.io/wildfly/wildfly:34.0.0.Final-jdk21 AS runtime
 
