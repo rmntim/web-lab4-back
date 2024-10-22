@@ -27,5 +27,5 @@ public class User {
     private String passwordHashB64;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Point> points = new HashSet<>();
+    private final Set<Point> points = new HashSet<>();
 }

@@ -1,21 +1,22 @@
 package ru.rmntim.web.repositories;
 
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.NoArgsConstructor;
 import ru.rmntim.web.models.User;
 
 import java.util.Collection;
 
+@RequestScoped
+@NoArgsConstructor
 public class UserRepository implements Repository<User, Long> {
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     public void create(User entity) {
-        var tx = entityManager.getTransaction();
-        tx.begin();
         entityManager.persist(entity);
-        tx.commit();
     }
 
     @Override
@@ -30,19 +31,12 @@ public class UserRepository implements Repository<User, Long> {
 
     @Override
     public User update(User entity) {
-        var tx = entityManager.getTransaction();
-        tx.begin();
-        var result = entityManager.merge(entity);
-        tx.commit();
-        return result;
+        return entityManager.merge(entity);
     }
 
     @Override
     public void delete(Long aLong) {
-        var tx = entityManager.getTransaction();
-        tx.begin();
         var user = entityManager.find(User.class, aLong);
         entityManager.remove(user);
-        tx.commit();
     }
 }
