@@ -8,9 +8,10 @@
         <class>ru.rmntim.web.models.Point</class>
         <class>ru.rmntim.web.models.User</class>
         <properties>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/postgres"/>
-            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
-            <property name="jakarta.persistence.jdbc.password" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://${env.POSTGRES_HOST}:${env.POSTGRES_PORT}/${env.POSTGRES_DB}"/>
+            <property name="jakarta.persistence.jdbc.user" value="${env.POSTGRES_USER}"/>
+            <property name="jakarta.persistence.jdbc.password" value="${env.POSTGRES_PASSWORD}"/>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="connection.pool_size" value="100"/>
             <property name="hibernate.show_sql" value="true"/>
