@@ -24,7 +24,7 @@ public class AreaChecker {
         }
         // Check for the triangle in the lower-right quadrant
         else if (x >= 0 && y <= 0) {
-            return y >= (2 * x - r / 2);
+            return 2 * y >= (x - r);
         }
         return false;
     }
