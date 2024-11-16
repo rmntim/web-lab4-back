@@ -1,9 +1,5 @@
 package ru.rmntim.web.filters;
 
-import ru.rmntim.web.Role;
-import ru.rmntim.web.auth.JwtProvider;
-import ru.rmntim.web.auth.UserPrincipal;
-import ru.rmntim.web.service.UserService;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -13,6 +9,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
+import ru.rmntim.web.Role;
+import ru.rmntim.web.auth.JwtProvider;
+import ru.rmntim.web.auth.UserPrincipal;
+import ru.rmntim.web.service.UserService;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -32,10 +32,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
 
     private static final Set<String> SKIP_PATHS = new HashSet<>(Arrays.asList(
             "/auth/signup",
-            "/auth/login",
-            "/auth/admin",
-            "/example",
-            "/auth/restorePassword"
+            "/auth/login"
     ));
 
     @Override
