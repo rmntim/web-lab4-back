@@ -56,7 +56,7 @@ public class UserController {
         }
     }
 
-    @DELETE
+    @PATCH
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteUserPoint() {
@@ -75,7 +75,7 @@ public class UserController {
     }
 
     @DELETE
-    @Path("/remove")
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deletePoint(PointDTO pointDTO) {
