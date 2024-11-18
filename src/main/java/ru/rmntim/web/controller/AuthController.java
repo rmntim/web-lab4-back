@@ -1,6 +1,7 @@
 package ru.rmntim.web.controller;
 
 import jakarta.inject.Inject;
+import jakarta.json.JsonStructure;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -12,11 +13,14 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.UserPrincipal;
+import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.dto.SimpleUserDTO;
 import ru.rmntim.web.dto.TokenDTO;
 import ru.rmntim.web.dto.UserDTO;
 import ru.rmntim.web.exceptions.*;
 import ru.rmntim.web.service.AuthService;
+
+import java.util.Map;
 
 @Path("/auth")
 @Slf4j
@@ -38,10 +42,10 @@ public class AuthController {
             return Response.ok(new TokenDTO(token)).build();
         } catch (UserExistsException | InvalidEmailException e) {
             log.error(e.getMessage());
-            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
+            return Response.status(Response.Status.CONFLICT).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (ServerException | UserNotFoundException e) {
             log.error(e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
         }
     }
 
@@ -56,13 +60,13 @@ public class AuthController {
             return Response.ok(new TokenDTO(token)).build();
         } catch (AuthenticationException e) {
             log.error("Login failed for user with email: {}", userDto.getEmail());
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
         } catch (ServerException e) {
             log.error("Internal server error: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
         }
     }
 
@@ -74,10 +78,10 @@ public class AuthController {
             authService.endSession(userPrincipal.getUserId());
 
             log.info("User logged out successfully.");
-            return Response.ok().entity("User logged out successfully.").build();
+            return Response.ok().entity(ErrorDTO.of("User logged out successfully.")).build();
         } catch (Exception e) {
             log.error("Error during logout: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error during logout").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Error during logout")).build();
         }
     }
 }

@@ -12,13 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.Role;
 import ru.rmntim.web.auth.JwtProvider;
 import ru.rmntim.web.auth.UserPrincipal;
+import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.service.UserService;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Provider
 @Slf4j
@@ -47,7 +45,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             requestContext.abortWith(Response
                     .status(Response.Status.UNAUTHORIZED)
-                    .entity("Authorization token is required")
+                    .entity(ErrorDTO.of("Authorization token is required"))
                     .build());
             return;
         }
@@ -57,7 +55,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
         if (jwtProvider.isTokenExpired(token)) {
             requestContext.abortWith(Response
                     .status(Response.Status.UNAUTHORIZED)
-                    .entity("Token expired")
+                    .entity(ErrorDTO.of("Token expired"))
                     .build());
             return;
         }
@@ -70,7 +68,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
         if (username == null || role == null || userId == null || (email == null && role.equals(Role.USER))) {
             requestContext.abortWith(Response
                     .status(Response.Status.UNAUTHORIZED)
-                    .entity("Invalid token")
+                    .entity(ErrorDTO.of("Invalid token"))
                     .build());
             return;
         }
