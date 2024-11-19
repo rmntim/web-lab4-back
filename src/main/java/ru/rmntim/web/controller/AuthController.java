@@ -72,11 +72,11 @@ public class AuthController {
 
     @POST
     @Path("/logout")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response logout() {
         try {
             UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
             authService.endSession(userPrincipal.getUserId());
-
             log.info("User logged out successfully.");
             return Response.ok().entity(ErrorDTO.of("User logged out successfully.")).build();
         } catch (Exception e) {
