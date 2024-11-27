@@ -1,16 +1,12 @@
 package ru.rmntim.web.controller;
 
 import jakarta.inject.Inject;
-import jakarta.json.JsonStructure;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.*;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
@@ -20,11 +16,17 @@ import ru.rmntim.web.dto.UserDTO;
 import ru.rmntim.web.exceptions.*;
 import ru.rmntim.web.service.AuthService;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Path("/auth")
 @Slf4j
 public class AuthController {
+    private static final NewCookie.Builder COOKIE = new NewCookie.Builder("token")
+            .maxAge((int) Duration.ofMinutes(30).toSeconds())
+            .path("/")
+            .httpOnly(true);
+
     @Inject
     private AuthService authService;
 
@@ -37,9 +39,9 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response signUp(@Valid UserDTO userDto) {
         try {
-            String token = authService.registerUser(userDto.getUsername(), userDto.getPassword(), userDto.getEmail());
-            log.info("Authorization successful!)");
-            return Response.ok(new TokenDTO(token)).build();
+            var token = authService.registerUser(userDto.getUsername(), userDto.getPassword(), userDto.getEmail());
+            var cookie = COOKIE.value(token).build();
+            return Response.ok().cookie(cookie).build();
         } catch (UserExistsException | InvalidEmailException e) {
             log.error(e.getMessage());
             return Response.status(Response.Status.CONFLICT).entity(ErrorDTO.of(e.getMessage())).build();
@@ -55,9 +57,9 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Valid SimpleUserDTO userDto) {
         try {
-            String token = authService.authenticateUser(userDto.getEmail(), userDto.getPassword());
-            log.info("Login successful for user with email: {}", userDto.getEmail());
-            return Response.ok(new TokenDTO(token)).build();
+            var token = authService.authenticateUser(userDto.getEmail(), userDto.getPassword());
+            var cookie = COOKIE.value(token).build();
+            return Response.ok().cookie(cookie).build();
         } catch (AuthenticationException e) {
             log.error("Login failed for user with email: {}", userDto.getEmail());
             return Response.status(Response.Status.UNAUTHORIZED).entity(ErrorDTO.of(e.getMessage())).build();
@@ -75,10 +77,10 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response logout() {
         try {
-            UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+            var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
             authService.endSession(userPrincipal.getUserId());
-            log.info("User logged out successfully.");
-            return Response.ok().entity(ErrorDTO.of("User logged out successfully.")).build();
+            var cookie = COOKIE.build();
+            return Response.ok().cookie(cookie).entity(ErrorDTO.of("User logged out successfully.")).build();
         } catch (Exception e) {
             log.error("Error during logout: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Error during logout")).build();

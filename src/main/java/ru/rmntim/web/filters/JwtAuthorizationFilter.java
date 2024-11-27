@@ -35,14 +35,14 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        String path = requestContext.getUriInfo().getPath();
+        var path = requestContext.getUriInfo().getPath();
         if (SKIP_PATHS.contains(path)) {
             return; // Skip JWT check for specified paths
         }
         log.info(path);
 
-        String authorizationHeader = requestContext.getHeaderString("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        var authorizationCookie = requestContext.getCookies().get("token");
+        if (authorizationCookie == null || authorizationCookie.getValue() == null || authorizationCookie.getValue().isBlank()) {
             requestContext.abortWith(Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity(ErrorDTO.of("Authorization token is required"))
@@ -50,7 +50,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
             return;
         }
 
-        String token = authorizationHeader.substring("Bearer ".length());
+        var token = authorizationCookie.getValue();
 
         if (jwtProvider.isTokenExpired(token)) {
             requestContext.abortWith(Response
@@ -60,10 +60,10 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
             return;
         }
 
-        String username = jwtProvider.getUsernameFromToken(token);
-        Role role = jwtProvider.getRoleFromToken(token);
-        Long userId = jwtProvider.getUserIdFromToken(token);
-        String email = jwtProvider.getEmailFromToken(token);
+        var username = jwtProvider.getUsernameFromToken(token);
+        var role = jwtProvider.getRoleFromToken(token);
+        var userId = jwtProvider.getUserIdFromToken(token);
+        var email = jwtProvider.getEmailFromToken(token);
 
         if (username == null || role == null || userId == null || (email == null && role.equals(Role.USER))) {
             requestContext.abortWith(Response
@@ -75,7 +75,7 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
 
         userService.updateLastActivity(userId);
 
-        SecurityContext originalContext = requestContext.getSecurityContext();
+        var originalContext = requestContext.getSecurityContext();
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
