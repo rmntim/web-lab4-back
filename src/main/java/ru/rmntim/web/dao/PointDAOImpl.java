@@ -69,22 +69,6 @@ public class PointDAOImpl implements PointDAO {
     }
 
     @Override
-    public void updatePointsRadius(Long userId, double newRadius) throws UserNotFoundException {
-        UserEntity user = findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
-
-        // Получаем все точки пользователя
-        List<PointEntity> userPoints = getPointsByUserId(userId);
-
-        // Обновляем радиус и результат каждой точки
-        for (PointEntity point : userPoints) {
-            point.setR(newRadius);
-            point.setResult(AreaChecker.isInArea(point.getX(), point.getY(), newRadius));
-            entityManager.merge(point); // Сохраняем обновленные данные точки
-        }
-    }
-
-    @Override
     public Optional<UserEntity> findById(Long userId) {
         UserEntity user = entityManager.find(UserEntity.class, userId);
         return Optional.ofNullable(user);

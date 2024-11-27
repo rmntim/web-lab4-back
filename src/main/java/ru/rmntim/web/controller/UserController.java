@@ -15,7 +15,6 @@ import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.UserService;
 
 import java.util.List;
-import java.util.Map;
 
 @Path("/user/points")
 @Slf4j
