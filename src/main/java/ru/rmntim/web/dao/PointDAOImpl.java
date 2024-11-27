@@ -19,6 +19,11 @@ public class PointDAOImpl implements PointDAO {
     private EntityManager entityManager;
 
     @Override
+    public List<PointEntity> getAll() {
+        return entityManager.createQuery("SELECT p FROM PointEntity p", PointEntity.class).getResultList();
+    }
+
+    @Override
     public List<PointEntity> getPointsByUserId(Long userId) throws UserNotFoundException {
         findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         return entityManager.createQuery("SELECT p FROM PointEntity p WHERE p.user.id = :userId", PointEntity.class)

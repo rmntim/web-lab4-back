@@ -24,10 +24,17 @@ public class UserService {
     @EJB
     private PointDAO pointDAO;
 
+    public List<PointDTO> getPoints() {
+        var points = pointDAO.getAll();
+        return points.stream()
+                .map(PointDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     public List<PointDTO> getUserPoints(Long userId) throws UserNotFoundException {
         List<PointEntity> points = pointDAO.getPointsByUserId(userId);
         return points.stream()
-                .map(p -> new PointDTO(p.getX(), p.getY(), p.getR(), p.isResult()))
+                .map(PointDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 

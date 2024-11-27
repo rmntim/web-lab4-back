@@ -29,6 +29,19 @@ public class UserController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
+    public Response getPoints() {
+        try {
+            var points = userService.getPoints();
+            return Response.ok(points).build();
+        } catch (Exception e) {
+            log.error("Error while getting points", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
+        }
+    }
+
+    @GET
+    @Path("/self")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getUserPoints() {
         UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {

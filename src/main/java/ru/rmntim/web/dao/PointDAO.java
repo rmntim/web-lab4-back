@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PointDAO {
+    List<PointEntity> getAll();
+
     List<PointEntity> getPointsByUserId(Long userId) throws UserNotFoundException;
 
     void addPointByUserId(Long userId, PointEntity point) throws UserNotFoundException;
