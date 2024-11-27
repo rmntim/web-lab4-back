@@ -11,13 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.dto.SimpleUserDTO;
-import ru.rmntim.web.dto.TokenDTO;
 import ru.rmntim.web.dto.UserDTO;
 import ru.rmntim.web.exceptions.*;
 import ru.rmntim.web.service.AuthService;
 
 import java.time.Duration;
-import java.util.Map;
 
 @Path("/auth")
 @Slf4j
