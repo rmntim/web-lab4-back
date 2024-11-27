@@ -3,6 +3,9 @@ FROM maven:3.8.8-eclipse-temurin-21 AS build
 WORKDIR /app
 
 COPY ./pom.xml ./pom.xml
+
+RUN mvn verify clean --fail-never
+
 COPY ./src ./src
 
 RUN mvn clean package
