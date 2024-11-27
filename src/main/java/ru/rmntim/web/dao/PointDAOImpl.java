@@ -8,7 +8,6 @@ import ru.rmntim.web.entity.PointEntity;
 import ru.rmntim.web.entity.UserEntity;
 import ru.rmntim.web.exceptions.PointNotFoundException;
 import ru.rmntim.web.exceptions.UserNotFoundException;
-import ru.rmntim.web.utils.AreaChecker;
 
 import java.util.List;
 import java.util.Optional;
