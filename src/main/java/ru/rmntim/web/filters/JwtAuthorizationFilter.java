@@ -13,7 +13,7 @@ import ru.rmntim.web.Role;
 import ru.rmntim.web.auth.JwtProvider;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
-import ru.rmntim.web.service.UserService;
+import ru.rmntim.web.service.PointService;
 
 import java.security.Principal;
 import java.util.*;
@@ -26,12 +26,11 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
     private JwtProvider jwtProvider;
 
     @Inject
-    private UserService userService;
+    private PointService userService;
 
     private static final Set<String> SKIP_PATHS = new HashSet<>(Arrays.asList(
             "/auth/signup",
-            "/auth/login"
-    ));
+            "/auth/login"));
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
@@ -42,7 +41,8 @@ public class JwtAuthorizationFilter implements ContainerRequestFilter {
         log.info(path);
 
         var authorizationCookie = requestContext.getCookies().get("token");
-        if (authorizationCookie == null || authorizationCookie.getValue() == null || authorizationCookie.getValue().isBlank()) {
+        if (authorizationCookie == null || authorizationCookie.getValue() == null
+                || authorizationCookie.getValue().isBlank()) {
             requestContext.abortWith(Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity(ErrorDTO.of("Authorization token is required"))

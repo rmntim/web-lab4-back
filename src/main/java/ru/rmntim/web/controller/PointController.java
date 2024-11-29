@@ -12,15 +12,15 @@ import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.dto.PointDTO;
 import ru.rmntim.web.exceptions.PointNotFoundException;
 import ru.rmntim.web.exceptions.UserNotFoundException;
-import ru.rmntim.web.service.UserService;
+import ru.rmntim.web.service.PointService;
 
 import java.util.List;
 
-@Path("/user/points")
+@Path("/points")
 @Slf4j
-public class UserController {
+public class PointController {
     @Inject
-    UserService userService;
+    PointService pointService;
 
     @Context
     private SecurityContext securityContext;
@@ -30,7 +30,7 @@ public class UserController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPoints() {
         try {
-            var points = userService.getPoints();
+            var points = pointService.getPoints();
             return Response.ok(points).build();
         } catch (Exception e) {
             log.error("Error while getting points", e);
@@ -44,7 +44,7 @@ public class UserController {
     public Response getUserPoints() {
         UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            List<PointDTO> points = userService.getUserPoints(userPrincipal.getUserId());
+            List<PointDTO> points = pointService.getUserPoints(userPrincipal.getUserId());
             return Response.ok(points).build();
         } catch (UserNotFoundException e) {
             log.error("Error retrieving points for user {}: {}", userPrincipal.getUserId(), e.getMessage());
@@ -64,7 +64,7 @@ public class UserController {
     public Response addUserPoint(PointDTO pointDTO) {
         UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            PointDTO createdPoint = userService.addUserPoint(userPrincipal.getUserId(), pointDTO);
+            PointDTO createdPoint = pointService.addUserPoint(userPrincipal.getUserId(), pointDTO);
             return Response.ok(createdPoint).build();
         } catch (Exception e) {
             log.error("Error adding point for user {}: {}", userPrincipal.getUserId(), e.getMessage());
@@ -79,7 +79,7 @@ public class UserController {
         UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
             Long userId = userPrincipal.getUserId();
-            userService.deleteUserPoints(userId);
+            pointService.deleteUserPoints(userId);
             return Response.ok().entity(ErrorDTO.of("All points deleted successfully.")).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());
@@ -98,7 +98,7 @@ public class UserController {
     public Response deletePoint(PointDTO pointDTO) {
         UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            userService.deleteSinglePoint(userPrincipal.getUserId(), pointDTO);
+            pointService.deleteSinglePoint(userPrincipal.getUserId(), pointDTO);
             return Response.ok().entity(ErrorDTO.of("Point deleted successfully.")).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());

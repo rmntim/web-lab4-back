@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Stateless
 @Slf4j
-public class UserService {
+public class PointService {
     @EJB
     private UserDAO userDAO;
 
