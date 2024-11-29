@@ -195,14 +195,16 @@ components:
     PointDTO:
       type: object
       properties:
-        id:
-          type: integer
         x:
           type: number
         y:
           type: number
-        description:
-          type: string
+        r:
+          type: number
+        result:
+          type: boolean
+        userId:
+          type: number
     ErrorDTO:
       type: object
       properties:
