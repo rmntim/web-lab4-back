@@ -26,8 +26,7 @@ public class JwtProvider {
                     .withClaim("userId", userId)
                     .withClaim("role", role.toString())
                     .withClaim("email", email)
-                    // Set expiry to 25 minutes
-                    .withExpiresAt(Instant.now().plus(25, ChronoUnit.MINUTES))
+                    .withExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES))
                     .sign(Algorithm.HMAC256(secretKey));
         } catch (ConfigurationException e) {
             log.error("Error generating token: {}", e.getMessage());
