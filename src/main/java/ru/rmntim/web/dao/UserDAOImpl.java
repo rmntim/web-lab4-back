@@ -4,6 +4,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.entity.UserEntity;
 import ru.rmntim.web.entity.UserSessionEntity;
 import ru.rmntim.web.exceptions.ServerException;
@@ -58,7 +59,7 @@ public class UserDAOImpl implements UserDAO {
     private void endExpiredSessions(Long userId) {
         LocalDateTime expiryTime = LocalDateTime.now().minusHours(1); // 1 hour session expiry
         entityManager.createQuery("UPDATE UserSessionEntity s SET s.sessionEnd = :now " +
-                "WHERE s.user.id = :userId AND s.sessionEnd IS NULL AND s.lastActivity < :expiryTime")
+                        "WHERE s.user.id = :userId AND s.sessionEnd IS NULL AND s.lastActivity < :expiryTime")
                 .setParameter("now", LocalDateTime.now())
                 .setParameter("userId", userId)
                 .setParameter("expiryTime", expiryTime)
@@ -69,8 +70,8 @@ public class UserDAOImpl implements UserDAO {
     public void endSession(Long userId) throws UserNotFoundException {
         findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         UserSessionEntity lastSession = entityManager.createQuery(
-                "SELECT s FROM UserSessionEntity s WHERE s.user.id = :userId ORDER BY s.sessionStart DESC",
-                UserSessionEntity.class)
+                        "SELECT s FROM UserSessionEntity s WHERE s.user.id = :userId ORDER BY s.sessionStart DESC",
+                        UserSessionEntity.class)
                 .setParameter("userId", userId)
                 .setMaxResults(1)
                 .getSingleResult();
@@ -82,7 +83,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void updateLastActivity(Long userId) {
         entityManager.createQuery(
-                "UPDATE UserSessionEntity s SET s.lastActivity = :now WHERE s.user.id = :userId AND s.sessionEnd IS NULL")
+                        "UPDATE UserSessionEntity s SET s.lastActivity = :now WHERE s.user.id = :userId AND s.sessionEnd IS NULL")
                 .setParameter("now", LocalDateTime.now())
                 .setParameter("userId", userId)
                 .executeUpdate();
@@ -94,5 +95,23 @@ public class UserDAOImpl implements UserDAO {
                 .createQuery("SELECT u FROM UserEntity u WHERE u.email = :email", UserEntity.class);
         query.setParameter("email", email);
         return query.getResultStream().findFirst();
+    }
+
+    @Override
+    public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
+        findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        var user = entityManager.find(UserEntity.class, userId);
+
+        if (userInfo.getUsername() != null) {
+            user.setUsername(userInfo.getUsername());
+        }
+
+        if (userInfo.getEmail() != null) {
+            user.setEmail(userInfo.getEmail());
+        }
+
+        var newUser = entityManager.merge(user);
+
+        return UserInfoDTO.fromEntity(newUser);
     }
 }

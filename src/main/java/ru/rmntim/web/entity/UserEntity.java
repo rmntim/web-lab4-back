@@ -34,6 +34,9 @@ public class UserEntity {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PointEntity> points;
 

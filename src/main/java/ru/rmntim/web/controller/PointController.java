@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class PointController {
     @Inject
-    PointService pointService;
+    private PointService pointService;
 
     @Context
     private SecurityContext securityContext;

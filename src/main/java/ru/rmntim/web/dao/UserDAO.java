@@ -1,5 +1,6 @@
 package ru.rmntim.web.dao;
 
+import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.entity.UserEntity;
 import ru.rmntim.web.exceptions.ServerException;
 import ru.rmntim.web.exceptions.UserNotFoundException;
@@ -20,4 +21,6 @@ public interface UserDAO {
     void updateLastActivity(Long userId);
 
     Optional<UserEntity> findByEmail(String email);
+
+    UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException;
 }
