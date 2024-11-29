@@ -190,6 +190,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDTO"
+  /users:
+    patch:
+      tags:
+        - Users
+      summary: Update user information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInfoDTO"
+      responses:
+        "200":
+          description: User information updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfoDTO"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDTO"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDTO"
+
 components:
   schemas:
     PointDTO:
@@ -225,4 +256,11 @@ components:
         email:
           type: string
         password:
+          type: string
+    UserInfoDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
           type: string

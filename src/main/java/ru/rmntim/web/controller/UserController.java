@@ -2,7 +2,7 @@ package ru.rmntim.web.controller;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
@@ -16,7 +16,7 @@ import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.UserService;
 
-@Path("/user")
+@Path("/users")
 @Slf4j
 public class UserController {
     @Inject
@@ -25,7 +25,7 @@ public class UserController {
     @Context
     private SecurityContext securityContext;
 
-    @POST
+    @PATCH
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateUserInfo(@Valid UserInfoDTO userInfo) {
