@@ -15,4 +15,3 @@ public class ExtendedUserDTO {
     private String email;
     private Long userId;
 }
-

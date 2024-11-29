@@ -50,8 +50,10 @@ public class UserController {
             log.error("Error retrieving points for user {}: {}", userPrincipal.getUserId(), e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (Exception e) {
-            log.error("Internal server error while retrieving points for user {}: {}", userPrincipal.getUserId(), e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error.")).build();
+            log.error("Internal server error while retrieving points for user {}: {}", userPrincipal.getUserId(),
+                    e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error."))
+                    .build();
         }
     }
 
@@ -84,7 +86,8 @@ public class UserController {
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
         } catch (Exception e) {
             log.error("Internal server error: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error")).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error"))
+                    .build();
         }
     }
 
@@ -105,7 +108,8 @@ public class UserController {
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("Point not found")).build();
         } catch (Exception e) {
             log.error("Internal server error: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error")).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error"))
+                    .build();
         }
     }
 }

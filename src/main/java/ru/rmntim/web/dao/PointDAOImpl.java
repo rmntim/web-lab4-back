@@ -30,22 +30,24 @@ public class PointDAOImpl implements PointDAO {
                 .getResultList();
     }
 
-
     @Override
     public void addPointByUserId(Long userId, PointEntity point) throws UserNotFoundException {
-        UserEntity user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        UserEntity user = findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         point.setUser(user);
         entityManager.persist(point);
     }
 
-
     @Override
-    public void removePointByUserId(Long userId, PointDTO pointDTO) throws UserNotFoundException, PointNotFoundException {
+    public void removePointByUserId(Long userId, PointDTO pointDTO)
+            throws UserNotFoundException, PointNotFoundException {
         UserEntity user = findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
 
         PointEntity pointToDelete = entityManager
-                .createQuery("SELECT p FROM PointEntity p WHERE p.user = :user AND p.x = :x AND p.y = :y AND p.r = :r AND p.result = :result", PointEntity.class)
+                .createQuery(
+                        "SELECT p FROM PointEntity p WHERE p.user = :user AND p.x = :x AND p.y = :y AND p.r = :r AND p.result = :result",
+                        PointEntity.class)
                 .setParameter("user", user)
                 .setParameter("x", pointDTO.getX())
                 .setParameter("y", pointDTO.getY())
@@ -57,7 +59,6 @@ public class PointDAOImpl implements PointDAO {
 
         entityManager.remove(pointToDelete);
     }
-
 
     @Override
     public void removeAllPointsByUserId(Long userId) throws UserNotFoundException {

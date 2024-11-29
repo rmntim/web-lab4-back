@@ -81,7 +81,8 @@ public class AuthController {
             return Response.ok().cookie(cookie).entity(ErrorDTO.of("User logged out successfully.")).build();
         } catch (Exception e) {
             log.error("Error during logout: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Error during logout")).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Error during logout"))
+                    .build();
         }
     }
 }

@@ -58,20 +58,19 @@ public class UserDAOImpl implements UserDAO {
     private void endExpiredSessions(Long userId) {
         LocalDateTime expiryTime = LocalDateTime.now().minusHours(1); // 1 hour session expiry
         entityManager.createQuery("UPDATE UserSessionEntity s SET s.sessionEnd = :now " +
-                        "WHERE s.user.id = :userId AND s.sessionEnd IS NULL AND s.lastActivity < :expiryTime")
+                "WHERE s.user.id = :userId AND s.sessionEnd IS NULL AND s.lastActivity < :expiryTime")
                 .setParameter("now", LocalDateTime.now())
                 .setParameter("userId", userId)
                 .setParameter("expiryTime", expiryTime)
                 .executeUpdate();
     }
 
-
     @Override
     public void endSession(Long userId) throws UserNotFoundException {
         findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         UserSessionEntity lastSession = entityManager.createQuery(
-                        "SELECT s FROM UserSessionEntity s WHERE s.user.id = :userId ORDER BY s.sessionStart DESC",
-                        UserSessionEntity.class)
+                "SELECT s FROM UserSessionEntity s WHERE s.user.id = :userId ORDER BY s.sessionStart DESC",
+                UserSessionEntity.class)
                 .setParameter("userId", userId)
                 .setMaxResults(1)
                 .getSingleResult();
@@ -82,7 +81,8 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void updateLastActivity(Long userId) {
-        entityManager.createQuery("UPDATE UserSessionEntity s SET s.lastActivity = :now WHERE s.user.id = :userId AND s.sessionEnd IS NULL")
+        entityManager.createQuery(
+                "UPDATE UserSessionEntity s SET s.lastActivity = :now WHERE s.user.id = :userId AND s.sessionEnd IS NULL")
                 .setParameter("now", LocalDateTime.now())
                 .setParameter("userId", userId)
                 .executeUpdate();
