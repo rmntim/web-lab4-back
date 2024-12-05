@@ -13,6 +13,10 @@ public class UserService {
     @EJB
     private UserDAO userDAO;
 
+    public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
+        return userDAO.getUserInfo(userId);
+    }
+
     public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
         return userDAO.updateUserInfo(userId, userInfo);
     }

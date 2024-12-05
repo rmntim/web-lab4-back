@@ -2,9 +2,7 @@ package ru.rmntim.web.controller;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -25,9 +23,27 @@ public class UserController {
     @Context
     private SecurityContext securityContext;
 
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserInfo() {
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        try {
+            var user = userService.getUserInfo(userPrincipal.getUserId());
+            return Response.ok(user).build();
+        } catch (UserNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
+        } catch (Exception e) {
+            log.error("Error retrieving user info: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
+        }
+    }
+
     @PATCH
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response updateUserInfo(@Valid UserInfoDTO userInfo) {
         var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {

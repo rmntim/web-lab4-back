@@ -22,5 +22,7 @@ public interface UserDAO {
 
     Optional<UserEntity> findByEmail(String email);
 
+    UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException;
+
     UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException;
 }

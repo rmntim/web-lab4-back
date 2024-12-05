@@ -22,10 +22,13 @@ public class UserInfoDTO {
     @Email(message = "Invalid email format")
     private String email;
 
+    private String avatarUrl;
+
     public static UserInfoDTO fromEntity(UserEntity entity) {
         return UserInfoDTO.builder()
                 .username(entity.getUsername())
                 .email(entity.getEmail())
+                .avatarUrl(entity.getAvatarUrl())
                 .build();
     }
 }

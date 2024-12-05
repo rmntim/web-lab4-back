@@ -91,16 +91,21 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<UserEntity> findByEmail(String email) {
-        TypedQuery<UserEntity> query = entityManager
+        var query = entityManager
                 .createQuery("SELECT u FROM UserEntity u WHERE u.email = :email", UserEntity.class);
         query.setParameter("email", email);
         return query.getResultStream().findFirst();
     }
 
     @Override
+    public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
+        var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        return UserInfoDTO.fromEntity(user);
+    }
+
+    @Override
     public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
-        findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
-        var user = entityManager.find(UserEntity.class, userId);
+        var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
 
         if (userInfo.getUsername() != null) {
             user.setUsername(userInfo.getUsername());
