@@ -77,7 +77,7 @@ public class AuthController {
         try {
             var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
             authService.endSession(userPrincipal.getUserId());
-            var cookie = COOKIE.build();
+            var cookie = COOKIE.value("").build();
             return Response.ok().cookie(cookie).build();
         } catch (Exception e) {
             log.error("Error during logout: {}", e.getMessage());
