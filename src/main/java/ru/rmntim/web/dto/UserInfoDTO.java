@@ -1,6 +1,7 @@
 package ru.rmntim.web.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,9 @@ import ru.rmntim.web.entity.UserEntity;
 @NoArgsConstructor
 @Builder
 public class UserInfoDTO {
+    @Min(0)
+    private long id;
+
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username must be alphanumeric with underscores")
     private String username;
@@ -26,6 +30,7 @@ public class UserInfoDTO {
 
     public static UserInfoDTO fromEntity(UserEntity entity) {
         return UserInfoDTO.builder()
+                .id(entity.getId())
                 .username(entity.getUsername())
                 .email(entity.getEmail())
                 .avatarUrl(entity.getAvatarUrl())

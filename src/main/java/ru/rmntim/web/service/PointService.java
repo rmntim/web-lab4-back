@@ -7,7 +7,6 @@ import ru.rmntim.web.dao.PointDAO;
 import ru.rmntim.web.dao.UserDAO;
 import ru.rmntim.web.dto.PointDTO;
 import ru.rmntim.web.entity.PointEntity;
-import ru.rmntim.web.entity.UserEntity;
 import ru.rmntim.web.exceptions.PointNotFoundException;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.utils.AreaChecker;
@@ -39,11 +38,11 @@ public class PointService {
     }
 
     public PointDTO addUserPoint(Long userId, PointDTO pointDTO) throws UserNotFoundException {
-        UserEntity user = userDAO.findById(userId)
+        var user = userDAO.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        boolean isInsideArea = AreaChecker.isInArea(pointDTO.getX(), pointDTO.getY(), pointDTO.getR());
-        PointEntity pointEntity = PointEntity.builder()
+        var isInsideArea = AreaChecker.isInArea(pointDTO.getX(), pointDTO.getY(), pointDTO.getR());
+        var pointEntity = PointEntity.builder()
                 .x(pointDTO.getX())
                 .y(pointDTO.getY())
                 .r(pointDTO.getR())
@@ -52,12 +51,7 @@ public class PointService {
                 .build();
 
         pointDAO.addPointByUserId(userId, pointEntity);
-        return PointDTO.builder()
-                .x(pointEntity.getX())
-                .y(pointEntity.getY())
-                .r(pointEntity.getR())
-                .result(pointEntity.isResult())
-                .build();
+        return PointDTO.fromEntity(pointEntity);
     }
 
     public void deleteUserPoints(Long userId) throws UserNotFoundException {

@@ -37,9 +37,9 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response signUp(@Valid UserDTO userDto) {
         try {
-            var token = authService.registerUser(userDto.getUsername(), userDto.getPassword(), userDto.getEmail());
-            var cookie = COOKIE.value(token).build();
-            return Response.ok().cookie(cookie).build();
+            var tokenAndUserInfo = authService.registerUser(userDto.getUsername(), userDto.getPassword(), userDto.getEmail());
+            var cookie = COOKIE.value(tokenAndUserInfo.getLeft()).build();
+            return Response.ok(tokenAndUserInfo.getRight()).cookie(cookie).build();
         } catch (UserExistsException | InvalidEmailException e) {
             log.error(e.getMessage());
             return Response.status(Response.Status.CONFLICT).entity(ErrorDTO.of(e.getMessage())).build();
@@ -55,9 +55,9 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Valid SimpleUserDTO userDto) {
         try {
-            var token = authService.authenticateUser(userDto.getEmail(), userDto.getPassword());
-            var cookie = COOKIE.value(token).build();
-            return Response.ok().cookie(cookie).build();
+            var tokenAndUserInfo = authService.authenticateUser(userDto.getEmail(), userDto.getPassword());
+            var cookie = COOKIE.value(tokenAndUserInfo.getLeft()).build();
+            return Response.ok(tokenAndUserInfo.getRight()).cookie(cookie).build();
         } catch (AuthenticationException e) {
             log.error("Login failed for user with email: {}", userDto.getEmail());
             return Response.status(Response.Status.UNAUTHORIZED).entity(ErrorDTO.of(e.getMessage())).build();

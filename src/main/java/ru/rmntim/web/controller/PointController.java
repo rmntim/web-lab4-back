@@ -62,9 +62,9 @@ public class PointController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addUserPoint(PointDTO pointDTO) {
-        UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            PointDTO createdPoint = pointService.addUserPoint(userPrincipal.getUserId(), pointDTO);
+            var createdPoint = pointService.addUserPoint(userPrincipal.getUserId(), pointDTO);
             return Response.ok(createdPoint).build();
         } catch (Exception e) {
             log.error("Error adding point for user {}: {}", userPrincipal.getUserId(), e.getMessage());
@@ -75,12 +75,12 @@ public class PointController {
     @DELETE
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteUserPoint() {
-        UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+    public Response deleteUserPoints() {
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            Long userId = userPrincipal.getUserId();
+            var userId = userPrincipal.getUserId();
             pointService.deleteUserPoints(userId);
-            return Response.ok().entity(ErrorDTO.of("All points deleted successfully.")).build();
+            return Response.ok(ErrorDTO.of("All points deleted successfully.")).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
