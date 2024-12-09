@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import ru.rmntim.web.Role;
+import ru.rmntim.web.auth.Role;
 
 import java.util.Set;
 

@@ -7,7 +7,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
-import ru.rmntim.web.Role;
 import ru.rmntim.web.exceptions.ConfigurationException;
 import ru.rmntim.web.exceptions.ServerException;
 

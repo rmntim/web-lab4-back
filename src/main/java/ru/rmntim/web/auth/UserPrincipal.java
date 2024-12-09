@@ -1,6 +1,5 @@
 package ru.rmntim.web.auth;
 
-import ru.rmntim.web.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

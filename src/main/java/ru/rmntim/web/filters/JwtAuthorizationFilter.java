@@ -9,14 +9,17 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
-import ru.rmntim.web.Role;
 import ru.rmntim.web.auth.JwtProvider;
+import ru.rmntim.web.auth.Role;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.service.PointService;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Provider
 @Slf4j
