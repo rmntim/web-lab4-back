@@ -2,6 +2,7 @@ package ru.rmntim.web.service;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.dao.PointDAO;
 import ru.rmntim.web.dao.UserDAO;
@@ -9,7 +10,6 @@ import ru.rmntim.web.dto.PointDTO;
 import ru.rmntim.web.entity.PointEntity;
 import ru.rmntim.web.exceptions.PointNotFoundException;
 import ru.rmntim.web.exceptions.UserNotFoundException;
-import ru.rmntim.web.utils.AreaChecker;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +22,9 @@ public class PointService {
 
     @EJB
     private PointDAO pointDAO;
+
+    @Inject
+    private AreaCheckerService areaCheckerService;
 
     public List<PointDTO> getPoints() {
         var points = pointDAO.getAll();
@@ -41,7 +44,7 @@ public class PointService {
         var user = userDAO.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        var isInsideArea = AreaChecker.isInArea(pointDTO.getX(), pointDTO.getY(), pointDTO.getR());
+        var isInsideArea = areaCheckerService.isInArea(pointDTO.getX(), pointDTO.getY(), pointDTO.getR());
         var pointEntity = PointEntity.builder()
                 .x(pointDTO.getX())
                 .y(pointDTO.getY())
