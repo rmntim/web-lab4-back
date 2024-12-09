@@ -23,19 +23,19 @@ public class UserService {
     @Inject
     private AvatarService avatarService;
 
-    public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
+    public UserInfoDTO getUserInfo(long userId) throws UserNotFoundException {
         return userDAO.getUserInfo(userId);
     }
 
-    public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
+    public UserInfoDTO updateUserInfo(long userId, UserInfoDTO userInfo) throws UserNotFoundException {
         return userDAO.updateUserInfo(userId, userInfo);
     }
 
-    public void deleteUser(Long userId) throws UserNotFoundException {
+    public void deleteUser(long userId) throws UserNotFoundException {
         userDAO.deleteUser(userId);
     }
 
-    public void updatePassword(Long userId, String currentPassword, String newPassword) throws UserNotFoundException {
+    public void updatePassword(long userId, String currentPassword, String newPassword) throws UserNotFoundException {
         var user = userDAO.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!PasswordHasher.checkPassword(currentPassword.toCharArray(), user.getPassword())) {
@@ -48,8 +48,12 @@ public class UserService {
         emailService.sendPasswordChangeEmail(user.getEmail());
     }
 
-    public UserInfoDTO uploadAvatar(Long userId, InputStream inputStream) throws UserNotFoundException {
+    public UserInfoDTO uploadAvatar(long userId, InputStream inputStream) throws UserNotFoundException {
         var avatarUrl = avatarService.uploadAvatar(inputStream);
         return userDAO.updateAvatar(userId, avatarUrl);
+    }
+
+    public UserInfoDTO getUserInfoById(long userId) throws UserNotFoundException {
+        return userDAO.getUserInfoById(userId);
     }
 }

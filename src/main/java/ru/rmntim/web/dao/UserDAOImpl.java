@@ -27,7 +27,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public Optional<UserEntity> findById(Long userId) {
+    public Optional<UserEntity> findById(long userId) {
         UserEntity user = entityManager.find(UserEntity.class, userId);
         return Optional.ofNullable(user);
     }
@@ -44,7 +44,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void startNewSession(Long userId) throws UserNotFoundException {
+    public void startNewSession(long userId) throws UserNotFoundException {
         // End any existing sessions that are past their expiry
         endExpiredSessions(userId);
 
@@ -56,7 +56,7 @@ public class UserDAOImpl implements UserDAO {
         entityManager.persist(session);
     }
 
-    private void endExpiredSessions(Long userId) {
+    private void endExpiredSessions(long userId) {
         LocalDateTime expiryTime = LocalDateTime.now().minusHours(1); // 1 hour session expiry
         entityManager.createQuery("UPDATE UserSessionEntity s SET s.sessionEnd = :now " +
                         "WHERE s.user.id = :userId AND s.sessionEnd IS NULL AND s.lastActivity < :expiryTime")
@@ -67,7 +67,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void endSession(Long userId) throws UserNotFoundException {
+    public void endSession(long userId) throws UserNotFoundException {
         findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         UserSessionEntity lastSession = entityManager.createQuery(
                         "SELECT s FROM UserSessionEntity s WHERE s.user.id = :userId ORDER BY s.sessionStart DESC",
@@ -81,7 +81,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void updateLastActivity(Long userId) {
+    public void updateLastActivity(long userId) {
         entityManager.createQuery(
                         "UPDATE UserSessionEntity s SET s.lastActivity = :now WHERE s.user.id = :userId AND s.sessionEnd IS NULL")
                 .setParameter("now", LocalDateTime.now())
@@ -98,13 +98,13 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
+    public UserInfoDTO getUserInfo(long userId) throws UserNotFoundException {
         var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         return UserInfoDTO.fromEntity(user);
     }
 
     @Override
-    public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
+    public UserInfoDTO updateUserInfo(long userId, UserInfoDTO userInfo) throws UserNotFoundException {
         var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
 
         if (userInfo.getUsername() != null) {
@@ -121,7 +121,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void deleteUser(Long userId) throws UserNotFoundException {
+    public void deleteUser(long userId) throws UserNotFoundException {
         var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         var query = entityManager
                 .createQuery("DELETE FROM UserEntity u WHERE u.id = :userId");
@@ -136,10 +136,16 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public UserInfoDTO updateAvatar(Long userId, String avatarUrl) throws UserNotFoundException {
+    public UserInfoDTO updateAvatar(long userId, String avatarUrl) throws UserNotFoundException {
         var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
         user.setAvatarUrl(avatarUrl);
         var newUser = entityManager.merge(user);
         return UserInfoDTO.fromEntity(newUser);
+    }
+
+    @Override
+    public UserInfoDTO getUserInfoById(long userId) throws UserNotFoundException {
+        var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        return UserInfoDTO.fromEntity(user);
     }
 }

@@ -10,25 +10,27 @@ import java.util.Optional;
 public interface UserDAO {
     Optional<UserEntity> findByUsername(String username);
 
-    Optional<UserEntity> findById(Long userId);
+    Optional<UserEntity> findById(long userId);
 
     UserEntity createUser(UserEntity user) throws ServerException;
 
-    void startNewSession(Long userId) throws UserNotFoundException;
+    void startNewSession(long userId) throws UserNotFoundException;
 
-    void endSession(Long userId) throws UserNotFoundException;
+    void endSession(long userId) throws UserNotFoundException;
 
-    void updateLastActivity(Long userId);
+    void updateLastActivity(long userId);
 
     Optional<UserEntity> findByEmail(String email);
 
-    UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException;
+    UserInfoDTO getUserInfo(long userId) throws UserNotFoundException;
 
-    UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException;
+    UserInfoDTO updateUserInfo(long userId, UserInfoDTO userInfo) throws UserNotFoundException;
 
-    void deleteUser(Long userId) throws UserNotFoundException;
+    void deleteUser(long userId) throws UserNotFoundException;
 
     void updatePassword(UserEntity user, String newPasswordHash);
 
-    UserInfoDTO updateAvatar(Long userId, String avatarUrl) throws UserNotFoundException;
+    UserInfoDTO updateAvatar(long userId, String avatarUrl) throws UserNotFoundException;
+
+    UserInfoDTO getUserInfoById(long userId) throws UserNotFoundException;
 }

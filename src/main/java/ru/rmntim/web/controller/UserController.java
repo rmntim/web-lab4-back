@@ -40,6 +40,22 @@ public class UserController {
         }
     }
 
+    @GET
+    @Path("/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserInfoById(@PathParam("userId") long userId) {
+        try {
+            var user = userService.getUserInfoById(userId);
+            return Response.ok(user).build();
+        } catch (UserNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
+        } catch (Exception e) {
+            log.error("Error retrieving user info: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
+        }
+    }
+
     @PATCH
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
