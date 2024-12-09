@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.*;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
+import ru.rmntim.web.dto.UpdatePasswordDTO;
 import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.UserService;
@@ -52,6 +53,21 @@ public class UserController {
         } catch (Exception e) {
             log.error("Error updating user info: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
+        }
+    }
+
+    @PATCH
+    @Path("/password")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updatePassword(@Valid UpdatePasswordDTO passwordDTO) {
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        try {
+            userService.updatePassword(userPrincipal.getUserId(), passwordDTO.getCurrentPassword(), passwordDTO.getNewPassword());
+            return Response.ok().build();
+        } catch (Exception e) {
+            log.error("Error updating password: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Server error")).build();
         }
     }
 

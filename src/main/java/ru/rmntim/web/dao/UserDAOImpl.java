@@ -128,4 +128,10 @@ public class UserDAOImpl implements UserDAO {
         query.setParameter("userId", user.getId());
         query.executeUpdate();
     }
+
+    @Override
+    public void updatePassword(UserEntity user, String newPasswordHash) {
+        user.setPassword(newPasswordHash);
+        entityManager.merge(user);
+    }
 }
