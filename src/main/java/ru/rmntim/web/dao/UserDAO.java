@@ -29,4 +29,6 @@ public interface UserDAO {
     void deleteUser(Long userId) throws UserNotFoundException;
 
     void updatePassword(UserEntity user, String newPasswordHash);
+
+    UserInfoDTO updateAvatar(Long userId, String avatarUrl) throws UserNotFoundException;
 }

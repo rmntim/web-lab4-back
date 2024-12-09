@@ -9,6 +9,8 @@ import ru.rmntim.web.dao.UserDAO;
 import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 
+import java.io.InputStream;
+
 @Stateless
 @Slf4j
 public class UserService {
@@ -17,6 +19,9 @@ public class UserService {
 
     @Inject
     private EmailService emailService;
+
+    @Inject
+    private AvatarService avatarService;
 
     public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
         return userDAO.getUserInfo(userId);
@@ -41,5 +46,10 @@ public class UserService {
         userDAO.updatePassword(user, newPasswordHash);
 
         emailService.sendPasswordChangeEmail(user.getEmail());
+    }
+
+    public UserInfoDTO uploadAvatar(Long userId, InputStream inputStream) throws UserNotFoundException {
+        var avatarUrl = avatarService.uploadAvatar(inputStream);
+        return userDAO.updateAvatar(userId, avatarUrl);
     }
 }

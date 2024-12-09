@@ -134,4 +134,12 @@ public class UserDAOImpl implements UserDAO {
         user.setPassword(newPasswordHash);
         entityManager.merge(user);
     }
+
+    @Override
+    public UserInfoDTO updateAvatar(Long userId, String avatarUrl) throws UserNotFoundException {
+        var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        user.setAvatarUrl(avatarUrl);
+        var newUser = entityManager.merge(user);
+        return UserInfoDTO.fromEntity(newUser);
+    }
 }

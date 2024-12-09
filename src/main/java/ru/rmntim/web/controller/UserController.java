@@ -12,6 +12,8 @@ import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.UserService;
 
+import java.util.List;
+
 @Path("/users")
 @Slf4j
 public class UserController {
@@ -81,18 +83,33 @@ public class UserController {
         var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
             userService.deleteUser(userPrincipal.getUserId());
-            var cookie = new NewCookie.Builder("token")
-                    .maxAge(0)
-                    .path("/")
-                    .httpOnly(true)
-                    .value("")
-                    .build();
+            var cookie = new NewCookie.Builder("token").maxAge(0).path("/").httpOnly(true).value("").build();
             return Response.ok().cookie(cookie).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (Exception e) {
             log.error("Error deleting user: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Server error")).build();
+        }
+    }
+
+    @POST
+    @Path("/avatar")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response uploadAvatar(List<EntityPart> parts) {
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        try {
+            var file = parts.stream().filter(part -> "file".equals(part.getName())).findFirst().orElseThrow();
+            var inputStream = file.getContent();
+            var userInfo = userService.uploadAvatar(userPrincipal.getUserId(), inputStream);
+            return Response.accepted(userInfo).build();
+        } catch (UserNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
+        } catch (Exception e) {
+            log.error("Error uploading avatar: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Server error")).build();
         }
     }

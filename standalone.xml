@@ -511,6 +511,11 @@
             <bindings>
                 <simple name="java:global/jwt/secret" value="${env.JWT_SECRET}" type="java.lang.String"/>
                 <simple name="java:global/mail/password" value="${env.SMTP_PASSWORD}" type="java.lang.String"/>
+
+                <simple name="java:global/s3/endpoint" value="${env.S3_ENDPOINT}" type="java.lang.String"/>
+                <simple name="java:global/s3/accessKey" value="${env.S3_ACCESS_KEY}" type="java.lang.String"/>
+                <simple name="java:global/s3/secretKey" value="${env.S3_SECRET_KEY}" type="java.lang.String"/>
+                <simple name="java:global/s3/bucketName" value="${env.S3_BUCKET_NAME}" type="java.lang.String"/>
             </bindings>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
