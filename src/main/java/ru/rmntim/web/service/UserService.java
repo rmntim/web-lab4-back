@@ -2,6 +2,7 @@ package ru.rmntim.web.service;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.PasswordHasher;
 import ru.rmntim.web.dao.UserDAO;
@@ -13,6 +14,9 @@ import ru.rmntim.web.exceptions.UserNotFoundException;
 public class UserService {
     @EJB
     private UserDAO userDAO;
+
+    @Inject
+    private EmailService emailService;
 
     public UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException {
         return userDAO.getUserInfo(userId);
@@ -35,5 +39,7 @@ public class UserService {
 
         var newPasswordHash = PasswordHasher.hashPassword(newPassword.toCharArray());
         userDAO.updatePassword(user, newPasswordHash);
+
+        emailService.sendPasswordChangeEmail(user.getEmail());
     }
 }

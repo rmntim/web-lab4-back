@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-    version="4.0">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
     <context-param>
         <param-name>resteasy.preferJacksonOverJsonB</param-name>
         <param-value>false</param-value>
@@ -11,5 +11,10 @@
         <env-entry-name>java:global/env/jwt/SecretKey</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>my-secret-key</env-entry-value>
+    </env-entry>
+    <env-entry>
+        <env-entry-name>java:global/env/mail/key</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>[REDACTED]</env-entry-value>
     </env-entry>
 </web-app>

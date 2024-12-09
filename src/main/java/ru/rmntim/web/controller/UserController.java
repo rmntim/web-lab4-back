@@ -65,6 +65,9 @@ public class UserController {
         try {
             userService.updatePassword(userPrincipal.getUserId(), passwordDTO.getCurrentPassword(), passwordDTO.getNewPassword());
             return Response.ok().build();
+        } catch (UserNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (Exception e) {
             log.error("Error updating password: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Server error")).build();

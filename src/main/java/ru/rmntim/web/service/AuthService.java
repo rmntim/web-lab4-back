@@ -23,6 +23,9 @@ public class AuthService {
     @Inject
     private JwtProvider jwtProvider;
 
+    @Inject
+    private EmailService emailService;
+
     public Pair<String, UserInfoDTO> registerUser(String username, String password, String email) throws UserExistsException, ServerException, UserNotFoundException, InvalidEmailException {
         if (userDAO.findByUsername(username).isPresent()) {
             throw new UserExistsException("User already exists: " + username);
@@ -32,6 +35,8 @@ public class AuthService {
         var createdUser = userDAO.createUser(newUser);
 
         log.info("Successfully added user: {}", createdUser);
+
+        emailService.sendSignUpEmail(email, username);
 
         var token = jwtProvider.generateToken(createdUser.getUsername(), Role.USER, createdUser.getId(), createdUser.getEmail());
         userDAO.startNewSession(jwtProvider.getUserIdFromToken(token));
