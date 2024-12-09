@@ -1,12 +1,12 @@
 package ru.rmntim.web.service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
-import ru.rmntim.web.config.SecurityConfig;
 
 import java.util.Properties;
 
@@ -14,6 +14,9 @@ import java.util.Properties;
 @Slf4j
 public class EmailService {
     private Session emailSession;
+
+    @Resource(lookup = "java:global/mail/password")
+    private String SMTP_PASSWORD;
 
     @PostConstruct
     public void init() {
@@ -27,15 +30,17 @@ public class EmailService {
         emailSession = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("API_KEY", SecurityConfig.getEmailAuthKey());
+                return new PasswordAuthentication("API_KEY", SMTP_PASSWORD);
             }
         });
     }
 
     public void sendEmail(String email, String subject, String text) {
         try {
+            var fromAddress = "noreply@mail.rmntim.ru";
+
             var message = new MimeMessage(emailSession);
-            message.setFrom(new InternetAddress("noreply@mail.rmntim.ru"));
+            message.setFrom(new InternetAddress(fromAddress));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
             message.setSubject(subject);
             message.setText(text);

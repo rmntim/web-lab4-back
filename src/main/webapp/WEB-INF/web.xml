@@ -7,14 +7,4 @@
         <param-name>resteasy.preferJacksonOverJsonB</param-name>
         <param-value>false</param-value>
     </context-param>
-    <env-entry>
-        <env-entry-name>java:global/env/jwt/SecretKey</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>my-secret-key</env-entry-value>
-    </env-entry>
-    <env-entry>
-        <env-entry-name>java:global/env/mail/key</env-entry-name>
-        <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>[REDACTED]</env-entry-value>
-    </env-entry>
 </web-app>

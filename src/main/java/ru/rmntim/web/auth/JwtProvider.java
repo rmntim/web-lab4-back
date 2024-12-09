@@ -4,10 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.Role;
-import ru.rmntim.web.config.SecurityConfig;
 import ru.rmntim.web.exceptions.ConfigurationException;
 import ru.rmntim.web.exceptions.ServerException;
 
@@ -18,16 +18,18 @@ import java.util.Date;
 @Slf4j
 @ApplicationScoped
 public class JwtProvider {
+    @Resource(lookup = "java:global/jwt/secret")
+    private String SECRET;
+
     public String generateToken(String username, Role role, Long userId, String email) throws ServerException {
         try {
-            String secretKey = SecurityConfig.getJwtSecretKey();
             return JWT.create()
                     .withSubject(username)
                     .withClaim("userId", userId)
                     .withClaim("role", role.toString())
                     .withClaim("email", email)
                     .withExpiresAt(Instant.now().plus(30, ChronoUnit.MINUTES))
-                    .sign(Algorithm.HMAC256(secretKey));
+                    .sign(Algorithm.HMAC256(SECRET));
         } catch (ConfigurationException e) {
             log.error("Error generating token: {}", e.getMessage());
             throw new ServerException("Internal server error.", e);
