@@ -3,10 +3,7 @@ package ru.rmntim.web.controller;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.*;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
@@ -55,6 +52,29 @@ public class UserController {
         } catch (Exception e) {
             log.error("Error updating user info: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
+        }
+    }
+
+    @DELETE
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteUser() {
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        try {
+            userService.deleteUser(userPrincipal.getUserId());
+            var cookie = new NewCookie.Builder("token")
+                    .maxAge(0)
+                    .path("/")
+                    .httpOnly(true)
+                    .value("")
+                    .build();
+            return Response.ok().cookie(cookie).build();
+        } catch (UserNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
+        } catch (Exception e) {
+            log.error("Error deleting user: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Server error")).build();
         }
     }
 }

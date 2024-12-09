@@ -20,4 +20,8 @@ public class UserService {
     public UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException {
         return userDAO.updateUserInfo(userId, userInfo);
     }
+
+    public void deleteUser(Long userId) throws UserNotFoundException {
+        userDAO.deleteUser(userId);
+    }
 }

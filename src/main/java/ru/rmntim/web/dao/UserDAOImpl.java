@@ -119,4 +119,13 @@ public class UserDAOImpl implements UserDAO {
 
         return UserInfoDTO.fromEntity(newUser);
     }
+
+    @Override
+    public void deleteUser(Long userId) throws UserNotFoundException {
+        var user = findById(userId).orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " not found."));
+        var query = entityManager
+                .createQuery("DELETE FROM UserEntity u WHERE u.id = :userId");
+        query.setParameter("userId", user.getId());
+        query.executeUpdate();
+    }
 }

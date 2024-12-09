@@ -25,4 +25,6 @@ public interface UserDAO {
     UserInfoDTO getUserInfo(Long userId) throws UserNotFoundException;
 
     UserInfoDTO updateUserInfo(Long userId, UserInfoDTO userInfo) throws UserNotFoundException;
+
+    void deleteUser(Long userId) throws UserNotFoundException;
 }
