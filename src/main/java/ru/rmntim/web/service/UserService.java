@@ -3,6 +3,7 @@ package ru.rmntim.web.service;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import ru.rmntim.web.auth.PasswordHasher;
 import ru.rmntim.web.dao.UserDAO;
@@ -48,8 +49,8 @@ public class UserService {
         emailService.sendPasswordChangeEmail(user.getEmail());
     }
 
-    public UserInfoDTO uploadAvatar(long userId, InputStream inputStream) throws UserNotFoundException {
-        var avatarUrl = avatarService.uploadAvatar(inputStream);
+    public UserInfoDTO uploadAvatar(long userId, InputStream inputStream, MediaType mediaType) throws UserNotFoundException {
+        var avatarUrl = avatarService.uploadAvatar(inputStream, mediaType);
         return userDAO.updateAvatar(userId, avatarUrl);
     }
 

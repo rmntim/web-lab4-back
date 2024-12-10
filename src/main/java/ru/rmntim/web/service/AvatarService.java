@@ -2,6 +2,7 @@ package ru.rmntim.web.service;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
+import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -37,9 +38,9 @@ public class AvatarService {
                 .build();
     }
 
-    public String uploadAvatar(InputStream fileInputStream) {
+    public String uploadAvatar(InputStream fileInputStream, MediaType mediaType) {
         try {
-            var fileName = UUID.randomUUID() + ".png";
+            var fileName = UUID.randomUUID() + "." + mediaType.getSubtype();
             var s3Client = getS3Client();
 
             var byteArrayOutputStream = new ByteArrayOutputStream();
@@ -54,7 +55,7 @@ public class AvatarService {
                     PutObjectRequest.builder()
                             .bucket(BUCKET_NAME)
                             .key(fileName)
-                            .contentType("image/png")
+                            .contentType(mediaType.toString())
                             .build(),
                     RequestBody.fromBytes(fileData)
             );

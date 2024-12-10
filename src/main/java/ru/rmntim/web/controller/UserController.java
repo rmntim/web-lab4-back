@@ -118,8 +118,17 @@ public class UserController {
         var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
             var file = parts.stream().filter(part -> "file".equals(part.getName())).findFirst().orElseThrow();
+            var mediaType = file.getMediaType();
+            if (!mediaType.isCompatible(MediaType.valueOf("image/*"))) {
+                return Response
+                        .status(Response.Status.UNSUPPORTED_MEDIA_TYPE)
+                        .entity(ErrorDTO.of("Only images are supported"))
+                        .build();
+            }
+
             var inputStream = file.getContent();
-            var userInfo = userService.uploadAvatar(userPrincipal.getUserId(), inputStream);
+            var userInfo = userService.uploadAvatar(userPrincipal.getUserId(), inputStream, mediaType);
+
             return Response.accepted(userInfo).build();
         } catch (UserNotFoundException e) {
             log.error("User not found: {}", e.getMessage());
