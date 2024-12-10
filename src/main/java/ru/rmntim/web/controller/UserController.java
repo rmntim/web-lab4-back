@@ -12,8 +12,6 @@ import ru.rmntim.web.dto.UserInfoDTO;
 import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.UserService;
 
-import java.util.List;
-
 @Path("/users")
 @Slf4j
 public class UserController {
@@ -114,10 +112,12 @@ public class UserController {
     @Path("/avatar")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadAvatar(List<EntityPart> parts) {
+    // NOTE: idea cries for some reason that EntityPart is forbidden to use, also GIFs don't work :)
+    public Response uploadAvatar(@SuppressWarnings("RestParamTypeInspection")
+                                 @FormParam("file")
+                                 EntityPart file) {
         var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            var file = parts.stream().filter(part -> "file".equals(part.getName())).findFirst().orElseThrow();
             var mediaType = file.getMediaType();
             if (!mediaType.isCompatible(MediaType.valueOf("image/*"))) {
                 return Response
