@@ -12,7 +12,10 @@ import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.dto.SimpleUserDTO;
 import ru.rmntim.web.dto.UserDTO;
-import ru.rmntim.web.exceptions.*;
+import ru.rmntim.web.exceptions.AuthenticationException;
+import ru.rmntim.web.exceptions.InvalidEmailException;
+import ru.rmntim.web.exceptions.ServerException;
+import ru.rmntim.web.exceptions.UserExistsException;
 import ru.rmntim.web.service.AuthService;
 
 import java.time.Duration;
@@ -43,7 +46,7 @@ public class AuthController {
         } catch (UserExistsException | InvalidEmailException e) {
             log.error(e.getMessage());
             return Response.status(Response.Status.CONFLICT).entity(ErrorDTO.of(e.getMessage())).build();
-        } catch (ServerException | UserNotFoundException e) {
+        } catch (ServerException e) {
             log.error(e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
         }
@@ -61,9 +64,6 @@ public class AuthController {
         } catch (AuthenticationException e) {
             log.error("Login failed for user with email: {}", userDto.getEmail());
             return Response.status(Response.Status.UNAUTHORIZED).entity(ErrorDTO.of(e.getMessage())).build();
-        } catch (UserNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
         } catch (ServerException e) {
             log.error("Internal server error: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();

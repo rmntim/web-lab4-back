@@ -11,10 +11,7 @@ import ru.rmntim.web.auth.UserPrincipal;
 import ru.rmntim.web.dto.ErrorDTO;
 import ru.rmntim.web.dto.PointDTO;
 import ru.rmntim.web.exceptions.PointNotFoundException;
-import ru.rmntim.web.exceptions.UserNotFoundException;
 import ru.rmntim.web.service.PointService;
-
-import java.util.List;
 
 @Path("/points")
 @Slf4j
@@ -33,7 +30,7 @@ public class PointController {
             var points = pointService.getPoints();
             return Response.ok(points).build();
         } catch (Exception e) {
-            log.error("Error while getting points", e);
+            log.error("Error while getting points {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of(e.getMessage())).build();
         }
     }
@@ -42,18 +39,13 @@ public class PointController {
     @Path("/self")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserPoints() {
-        UserPrincipal userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
+        var userPrincipal = (UserPrincipal) securityContext.getUserPrincipal();
         try {
-            List<PointDTO> points = pointService.getUserPoints(userPrincipal.getUserId());
+            var points = pointService.getUserPoints(userPrincipal.getUserId());
             return Response.ok(points).build();
-        } catch (UserNotFoundException e) {
-            log.error("Error retrieving points for user {}: {}", userPrincipal.getUserId(), e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of(e.getMessage())).build();
         } catch (Exception e) {
-            log.error("Internal server error while retrieving points for user {}: {}", userPrincipal.getUserId(),
-                    e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error."))
-                    .build();
+            log.error("Error while retrieving points for user: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error.")).build();
         }
     }
 
@@ -81,13 +73,9 @@ public class PointController {
             var userId = userPrincipal.getUserId();
             pointService.deleteUserPoints(userId);
             return Response.ok(ErrorDTO.of("All points deleted successfully.")).build();
-        } catch (UserNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
         } catch (Exception e) {
-            log.error("Internal server error: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error"))
-                    .build();
+            log.error("Error deleting all points: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error")).build();
         }
     }
 
@@ -100,16 +88,12 @@ public class PointController {
         try {
             pointService.deleteSinglePoint(userPrincipal.getUserId(), pointDTO);
             return Response.ok().entity(ErrorDTO.of("Point deleted successfully.")).build();
-        } catch (UserNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("User not found")).build();
         } catch (PointNotFoundException e) {
             log.error("Point not found: {}", e.getMessage());
             return Response.status(Response.Status.NOT_FOUND).entity(ErrorDTO.of("Point not found")).build();
         } catch (Exception e) {
-            log.error("Internal server error: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error"))
-                    .build();
+            log.error("Error deleting single point: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ErrorDTO.of("Internal server error")).build();
         }
     }
 }
