@@ -15,6 +15,12 @@ import java.util.Properties;
 public class EmailService {
     private Session emailSession;
 
+    @Resource(lookup = "java:global/mail/host")
+    private String SMTP_HOST;
+
+    @Resource(lookup = "java:global/mail/port")
+    private String SMTP_PORT;
+
     @Resource(lookup = "java:global/mail/password")
     private String SMTP_PASSWORD;
 
@@ -23,9 +29,9 @@ public class EmailService {
         var props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "postbox.cloud.yandex.net");
-        props.put("mail.smtp.ssl.trust", "postbox.cloud.yandex.net");
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.host", SMTP_HOST);
+        props.put("mail.smtp.ssl.trust", SMTP_HOST);
+        props.put("mail.smtp.port", SMTP_PORT);
 
         emailSession = Session.getInstance(props, new Authenticator() {
             @Override

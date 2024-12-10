@@ -510,6 +510,9 @@
         <subsystem xmlns="urn:jboss:domain:naming:2.0">
             <bindings>
                 <simple name="java:global/jwt/secret" value="${env.JWT_SECRET}" type="java.lang.String"/>
+
+                <simple name="java:global/mail/host" value="${env.SMTP_HOST}" type="java.lang.String"/>
+                <simple name="java:global/mail/port" value="${env.SMTP_PORT}" type="java.lang.String"/>
                 <simple name="java:global/mail/password" value="${env.SMTP_PASSWORD}" type="java.lang.String"/>
 
                 <simple name="java:global/s3/endpoint" value="${env.S3_ENDPOINT}" type="java.lang.String"/>
