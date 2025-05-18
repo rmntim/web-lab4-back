@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 repositories {
@@ -24,19 +25,320 @@ dependencies {
 }
 
 group = 'ru.rmntim.web'
-version = '1.0-SNAPSHOT'
+version = project.version
 description = 'javaee-backend'
 
-java.sourceCompatibility = JavaVersion.VERSION_21
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = project.findProperty('encoding') ?: 'UTF-8'
+}
 tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
+    options.encoding = project.findProperty('encoding') ?: 'UTF-8'
 }
 
 war {
     archiveFileName.set('ROOT.war')
+    manifest {
+        attributes(
+            'Implementation-Version': project.version,
+        )
+    }
+}
+
+def envsProp = project.findProperty('envs') ?: ''
+ext.envs = envsProp.split(',')
+    .findAll()
+    .collectEntries { entry ->
+        def parts = entry.split(':')
+        def name = parts[0]
+        def javaHome = parts[1]
+        def vmArgs = parts.size() > 2 ? parts[2].split(';') : []
+        [ (name) : [ javaHome: javaHome, vmArgs: vmArgs ] ]
+    }
+
+def rp = project.findProperty('replacePatterns') ?: ''
+ext.replacePatterns = rp.split(',')
+    .findAll()
+    .collectEntries { entry ->
+        def (oldTok, newTok) = entry.split(':')
+        [ (oldTok) : newTok ]
+    }
+
+ext.diffIgnoreClasses = project.findProperty('diffIgnoreClasses')
+    ?.split(',') ?: []
+
+// ----------------
+// 1) xml – валидация
+// ----------------
+task xml {
+    group       = 'verification'
+    description = 'Validate all XML files.'
+    doLast {
+        fileTree('src').include('**/*.xml').each { f ->
+            ant.xmlvalidate(file: f)
+            println "Validated XML: $f"
+        }
+    }
+}
+
+// ------------------------
+// 2) scp – копирование WAR
+// ------------------------
+task scp(type: Exec) {
+  group     = 'deployment'
+  dependsOn = [war]
+  description = 'Copy WAR to remote host via system scp.'
+
+  // если у вас нестандартный ключ, можно передать -i "$scpKeyFile"
+  commandLine = [
+    'scp',
+    '-i', project.findProperty('scpKeyFile') ?: '',
+    war.archiveFile.get().asFile.absolutePath,
+    "${project.scpUser}@${project.scpHost}:${project.scpRemotePath}"
+  ].findAll { it }  // убираем пустые элементы
+}
+
+// ------------------------------------------
+// 3) native2ascii – конверсия .properties
+// ------------------------------------------
+task native2ascii {
+  group       = 'translation'
+  description = 'Convert all .properties via native2ascii in one go.'
+  
+  // создаём папку при необходимости
+  doFirst { file("$buildDir/ascii").mkdirs() }
+  
+  // ant.native2ascii умеет брать srcdir/destdir с includes
+  doLast {
+    ant.native2ascii(
+      src  : 'src/main/resources',
+      dest : "$buildDir/ascii",
+      encoding: project.encoding
+    )
+    println "All .properties converted into $buildDir/ascii"
+  }
+}
+
+
+// ----------------------------
+// 5) music – проиграть музыку
+// ----------------------------
+task music {
+    group       = 'misc'
+    description = 'Play music after build.'
+    dependsOn   build
+    doLast {
+        ant.exec(executable: project.findProperty('musicPlayer')) {
+            arg(value: project.findProperty('musicFile'))
+        }
+        println 'Music played.'
+    }
+}
+
+// --------------------------------------------------
+// 6) env – сборка и запуск в альтернативных средах
+// --------------------------------------------------
+task env {
+  group       = 'verification'
+  description = 'Run WAR in configured alternative environments.'
+  dependsOn   war
+
+  doLast {
+    envs.each { name, cfg ->
+      println "=== ENV: $name ==="
+      project.javaexec { spec ->
+        // 1) path to java
+        spec.executable = "${cfg.javaHome}/bin/java"
+        // 2) THIS is how you pass JVM args:
+        spec.jvmArgs(cfg.vmArgs)
+        // 3) run as “-jar ROOT.war” or via classpath + main:
+        //    either:
+        spec.args(['-jar', war.archiveFile.get().asFile])
+      }
+    }
+  }
+}
+
+
+// ----------------------------------------------------------------
+// 7) team – собрать N предыдущих ревизий, запаковать их JAR-ы в ZIP
+// ----------------------------------------------------------------
+task team {
+    group       = 'build'
+    description = 'Build last N Git revisions and zip their JARs.'
+    doLast {
+        def tmp     = file("$buildDir/team")
+        def jarsDir = file("$buildDir/team/jars")
+        tmp.mkdirs(); jarsDir.mkdirs()
+
+        def revsOut = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '-n',
+                        project.findProperty('teamRevisionsCount'),
+                        'HEAD'
+            standardOutput = revsOut
+        }
+        def revs = revsOut.toString().trim().split('\n')
+
+        revs.each { rev ->
+            def dir = file("$tmp/$rev")
+            exec { commandLine 'git', 'clone', '.', dir.absolutePath }
+            exec { workingDir dir; commandLine 'git', 'checkout', rev }
+            exec {
+                workingDir dir
+                commandLine 'gradle', 'clean', 'build', '-x', 'team'
+            }
+            copy {
+                from("$dir/build/libs/${project.name}-${project.version}.jar")
+                into jarsDir
+                rename { "${project.name}-$rev.jar" }
+            }
+        }
+
+        zip {
+            from jarsDir
+            destinationDirectory = file(buildDir)
+            archiveFileName      = "${project.name}-team.zip"
+        }
+        println 'Team archive created.'
+    }
+}
+
+// -----------------------------------------------------
+// 8) alt – альтернативная версия: replace + упаковать JAR
+// -----------------------------------------------------
+task prepareAlt {
+    group       = 'build'
+    description = 'Prepare alt sources with replacements.'
+    doLast {
+        def src    = file('src/main/java')
+        def altSrc = file("$buildDir/alt-sources")
+        copy { from src; into altSrc }
+        replacePatterns.each { oldTok, newTok ->
+            ant.replace(dir: altSrc, token: oldTok, value: newTok)
+        }
+        println 'Alt sources prepared.'
+    }
+}
+
+task compileAlt(type: JavaCompile) {
+    dependsOn      prepareAlt
+    source         = fileTree("$buildDir/alt-sources")
+    classpath      = sourceSets.main.compileClasspath
+    destinationDir = file("$buildDir/alt-classes")
+}
+
+task altJar(type: Jar) {
+    dependsOn       compileAlt
+    archiveClassifier.set('alt')
+    from             "$buildDir/alt-classes"
+}
+
+task alt {
+    group       = 'build'
+    description = 'Build alternative JAR.'
+    dependsOn   altJar
+}
+
+// ------------------------------------------------------------------
+// 9) report – при успешных тестах коммитим JUnit-XML в Git
+// ------------------------------------------------------------------
+ext.testOutcome = null
+
+test {
+    afterSuite { desc, result ->
+        if (!desc.parent) testOutcome = result
+    }
+}
+
+task report {
+    group       = 'reporting'
+    description = 'Commit JUnit XML when tests succeed.'
+    dependsOn   test
+    doLast {
+        if (testOutcome?.resultType
+            == org.gradle.api.tasks.testing.TestResult.ResultType.SUCCESS) {
+            exec { commandLine 'git', 'add', 'build/test-results/**/*.xml' }
+            exec { commandLine 'git', 'commit', '-m', 'Add JUnit report' }
+            println 'JUnit report committed.'
+        } else {
+            println 'Tests failed; skip report commit.'
+        }
+    }
+}
+
+// ------------------------------------------------------------------
+// 10) diff – автокоммит если изменение не затрагивает “diffIgnore”
+// ------------------------------------------------------------------
+task diff {
+    group       = 'version control'
+    description = 'Auto-commit non-class changes if allowed.'
+    doLast {
+        def out = new ByteArrayOutputStream()
+        exec {
+            commandLine    'git', 'status', '--porcelain'
+            standardOutput = out
+        }
+        def ok = true
+        out.toString().split('\n').each { line ->
+            def path = line.substring(3)
+            diffIgnoreClasses.each { pat ->
+                if (path.contains(pat)) ok = false
+            }
+        }
+        if (ok) {
+            exec { commandLine 'git', 'add', '.' }
+            exec { commandLine 'git', 'commit', '-m', 'Auto-commit changes' }
+            println 'Changes committed.'
+        } else {
+            println 'Prohibited class changes detected; no commit.'
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 11) history – откатываемся по rev, пока не соберётся, сохраняем diff в файл
+// ---------------------------------------------------------------------------
+task history {
+    group       = 'version control'
+    description = 'Rollback until build succeeds and save diff.'
+    doLast {
+        def revsOut = new ByteArrayOutputStream()
+        exec {
+            commandLine    'git', 'rev-list', 'HEAD'
+            standardOutput = revsOut
+        }
+        def revs        = revsOut.toString().trim().split('\n')
+        def lastWorking = null
+
+        for (rev in revs) {
+            exec { commandLine 'git', 'checkout', rev }
+            def res = exec {
+                ignoreExitValue = true
+                commandLine      'gradle', 'clean', 'build'
+            }.exitValue
+            if (res == 0) { lastWorking = rev; break }
+        }
+
+        if (lastWorking) {
+            def idx = revs.indexOf(lastWorking) - 1
+            if (idx >= 0) {
+                def nextRev = revs[idx]
+                def diffOut = new ByteArrayOutputStream()
+                exec {
+                    commandLine    'git', 'diff', lastWorking, nextRev
+                    standardOutput = diffOut
+                }
+                file("$buildDir/history_diff.txt").text = diffOut.toString()
+                println 'History diff saved.'
+            }
+        } else {
+            println 'No working revision found.'
+        }
+        exec { commandLine 'git', 'checkout', 'HEAD' }
+    }
 }
