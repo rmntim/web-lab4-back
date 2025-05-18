@@ -18,9 +18,9 @@ dependencies {
     implementation 'org.eclipse.angus:jakarta.mail:1.0.0'
     implementation 'software.amazon.awssdk:s3:2.29.29'
     implementation 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
-    implementation 'org.projectlombok:lombok:1.18.30'
     implementation 'jakarta.mail:jakarta.mail-api:2.1.0'
 
+    compileOnly     'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
@@ -169,11 +169,11 @@ task env {
 // ----------------------------------------------------------------
 task team {
     group       = 'build'
-    description = 'Build last N Git revisions and zip their JARs.'
+    description = 'Build last N Git revisions and zip their WARs.'
     doLast {
         def tmp     = file("$buildDir/team")
-        def jarsDir = file("$buildDir/team/jars")
-        tmp.mkdirs(); jarsDir.mkdirs()
+        def warsDir = file("$buildDir/team/wars")
+        tmp.mkdirs(); warsDir.mkdirs()
 
         def revsOut = new ByteArrayOutputStream()
         exec {
@@ -190,19 +190,18 @@ task team {
             exec { workingDir dir; commandLine 'git', 'checkout', rev }
             exec {
                 workingDir dir
-                commandLine 'gradle', 'clean', 'build', '-x', 'team'
+                commandLine './gradlew', 'clean', 'build'
             }
             copy {
-                from("$dir/build/libs/${project.name}-${project.version}.jar")
-                into jarsDir
-                rename { "${project.name}-$rev.jar" }
+                from("$dir/build/libs/${war.archiveFile.get().asFile.name}")
+                into warsDir
+                rename { "${project.name}-${rev}.war" }
             }
         }
 
-        zip {
-            from jarsDir
-            destinationDirectory = file(buildDir)
-            archiveFileName      = "${project.name}-team.zip"
+        def outZip = file("$buildDir/${project.name}-team.zip")
+        ant.zip(destfile: outZip) {
+            fileset(dir: "$buildDir/team/wars")
         }
         println 'Team archive created.'
     }
@@ -227,9 +226,13 @@ task prepareAlt {
 
 task compileAlt(type: JavaCompile) {
     dependsOn      prepareAlt
-    source         = fileTree("$buildDir/alt-sources")
+    source         = fileTree("$buildDir/alt-sources") { include '**/*.java' }
     classpath      = sourceSets.main.compileClasspath
     destinationDir = file("$buildDir/alt-classes")
+    options.encoding = project.findProperty('encoding') ?: 'UTF-8'
+
+    // THIS is the magic line: point at your annotation-processor classpath
+    options.annotationProcessorPath = configurations.annotationProcessor
 }
 
 task altJar(type: Jar) {
@@ -304,41 +307,55 @@ task diff {
 // 11) history – откатываемся по rev, пока не соберётся, сохраняем diff в файл
 // ---------------------------------------------------------------------------
 task history {
-    group       = 'version control'
-    description = 'Rollback until build succeeds and save diff.'
-    doLast {
-        def revsOut = new ByteArrayOutputStream()
-        exec {
-            commandLine    'git', 'rev-list', 'HEAD'
-            standardOutput = revsOut
-        }
-        def revs        = revsOut.toString().trim().split('\n')
-        def lastWorking = null
-
-        for (rev in revs) {
-            exec { commandLine 'git', 'checkout', rev }
-            def res = exec {
-                ignoreExitValue = true
-                commandLine      'gradle', 'clean', 'build'
-            }.exitValue
-            if (res == 0) { lastWorking = rev; break }
-        }
-
-        if (lastWorking) {
-            def idx = revs.indexOf(lastWorking) - 1
-            if (idx >= 0) {
-                def nextRev = revs[idx]
-                def diffOut = new ByteArrayOutputStream()
-                exec {
-                    commandLine    'git', 'diff', lastWorking, nextRev
-                    standardOutput = diffOut
-                }
-                file("$buildDir/history_diff.txt").text = diffOut.toString()
-                println 'History diff saved.'
-            }
-        } else {
-            println 'No working revision found.'
-        }
-        exec { commandLine 'git', 'checkout', 'HEAD' }
+  group       = 'version control'
+  description = 'Rollback until build succeeds and save diff.'
+  doLast {
+    // 1) get all revisions
+    def revsOut = new ByteArrayOutputStream()
+    exec {
+      commandLine 'git', 'rev-list', 'HEAD'
+      standardOutput = revsOut
     }
+    // 2) convert to List<String>
+    def revs = revsOut.toString()
+                      .trim()
+                      .tokenize('\n')   // <-- now revs is a List<String>
+
+    def lastWorking = null
+
+    // 3) find the first rev that builds
+    for (rev in revs) {
+      exec { commandLine 'git', 'checkout', rev }
+      def exitCode = exec {
+        ignoreExitValue = true
+        commandLine      './gradlew', 'clean', 'build', '-x', 'history'
+      }.exitValue
+      if (exitCode == 0) {
+        lastWorking = rev
+        break
+      }
+    }
+
+    if (lastWorking) {
+      println "Last working revision: $lastWorking"
+      def idx = revs.indexOf(lastWorking)
+      // next rev is the one after lastWorking in the list
+      if (idx < revs.size() - 1) {
+        def nextRev = revs[idx + 1]
+        def diffOut = new ByteArrayOutputStream()
+        exec {
+          commandLine    'git', 'diff', lastWorking, nextRev
+          standardOutput = diffOut
+        }
+        file("$buildDir/history_diff.txt").text = diffOut.toString()
+        println "History diff saved to: build/history_diff.txt"
+      } else {
+        println "No newer revision to diff against."
+      }
+    } else {
+      println "No working revision found in history."
+    }
+
+    exec { commandLine 'git', 'checkout', 'main' }
+  }
 }
