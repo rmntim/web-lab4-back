@@ -3,10 +3,14 @@ package ru.rmntim.web.service;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.ext.ContextResolver;
 import lombok.extern.slf4j.Slf4j;
+import ru.rmntim.web.util.MessageUtil;
 
 import java.util.Properties;
 
@@ -23,6 +27,12 @@ public class EmailService {
 
     @Resource(lookup = "java:global/mail/password")
     private String SMTP_PASSWORD;
+
+    @Inject
+    private MessageUtil messageUtil;
+
+    @Context
+    private ContextResolver<String> localeResolver;
 
     @PostConstruct
     public void init() {
@@ -59,23 +69,17 @@ public class EmailService {
     }
 
     public void sendSignUpEmail(String email, String username) {
-        var subject = "Welcome to Our Service!";
-        var text = "Hello " + username + ",\n\n" +
-                "You have successfully signed up with the following credentials:\n" +
-                "Username: " + username + "\n" +
-                "Email: " + email + "\n" +
-                "Do not forget your password and keep it safe.";
+        String language = localeResolver.getContext(String.class);
+        var subject = messageUtil.getMessage("user.email.signup.subject", language);
+        var text = messageUtil.getMessage("user.email.signup.content", language, username);
 
         sendEmail(email, subject, text);
     }
 
     public void sendPasswordChangeEmail(String email) {
-        var subject = "Your Password Has Been Changed";
-        var text = """
-                Hello,
-                
-                The password for your account has successfully been changed.
-                If you did not initiate this change, please contact our support team immediately.""";
+        String language = localeResolver.getContext(String.class);
+        var subject = messageUtil.getMessage("user.email.password.subject", language);
+        var text = messageUtil.getMessage("user.email.password.content", language);
 
         sendEmail(email, subject, text);
     }
