@@ -1,8 +1,10 @@
 .env
 .gradle
 target/
-build/
-!build/test-results/**/*.xml
+/build/**
+!/build/test-results/
+!/build/test-results/test/
+!/build/test-results/**/*.xml
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

@@ -274,9 +274,9 @@ tasks.register('report') {
     dependsOn test
     doLast {
         if (testOutcome?.resultType
-                == org.gradle.api.tasks.testing.TestResult.ResultType.SUCCESS) {
+                == TestResult.ResultType.SUCCESS) {
             exec { commandLine 'git', 'add', 'build/test-results/**/*.xml' }
-            exec { commandLine 'git', 'commit', '-m', 'Add JUnit report' }
+            exec { commandLine 'git', 'commit', '-m', 'test: add JUnit report' }
             println 'JUnit report committed.'
         } else {
             println 'Tests failed; skip report commit.'
