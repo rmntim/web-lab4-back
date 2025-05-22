@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ru.rmntim.web.service.AreaCheckerServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-05-22T10:38:57.045Z" hostname="Romans-MacBook-Air.local" time="0.007">
-  <properties/>
-  <testcase name="should handle R=0 correctly" classname="ru.rmntim.web.service.AreaCheckerServiceTest" time="0.005"/>
-  <testcase name="should handle negative R (current behavior)" classname="ru.rmntim.web.service.AreaCheckerServiceTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
